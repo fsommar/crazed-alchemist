@@ -24,6 +24,19 @@ defmodule Data.Minion do
     definitions[name]
   end
 
+  @doc """
+  Returns whether a minion by the provided name exists.
+
+    iex> Data.Minion.exists? "Imp"
+    true
+
+    iex> Data.Minion.exists? "NOEXIST"
+    false
+  """
+  def exists?(name) do
+    Map.has_key? definitions, name
+  end
+
   defp definitions do
     %{
       "Imp" => %Data.Minion{
