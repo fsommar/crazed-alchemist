@@ -21,9 +21,6 @@ defmodule Entity.Player do
     player = %Player{
       id: id
     }
-    Map.from_struct(player)
-    |> Map.keys
-    |> Enum.filter(&Keyword.has_key?(opts, &1))
-    |> Enum.reduce(player, &Map.put(&2, &1, Keyword.get(opts, &1)))
+    Entity.apply_opts(player, opts)
   end
 end
