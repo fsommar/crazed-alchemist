@@ -9,10 +9,10 @@ defmodule Entity.Hero do
   @doc """
   Creates a hero entity, optionally populating the fields with a keyword list.
 
-    iex> Entity.Hero.create "Jaina Proudmoore", mana: 10, mana_used: 5
+    iex> Entity.Hero.create %{name: "Jaina Proudmoore"}, mana: 10, mana_used: 5
     %Entity.Hero{mana: 10, mana_used: 5, entity: %Entity{name: "Jaina Proudmoore"}}
   """
-  def create(name, opts \\ []) do
+  def create(%{name: name} = _hero, opts \\ []) do
     Entity.apply_opts %Entity.Hero{}, opts ++ [name: name]
   end
 
