@@ -1,5 +1,25 @@
 defmodule Entity do
-  defstruct [:id, :name, :owner, buffs: []]
+  @keys [:id, :name, :owner, buffs: []]
+  defstruct @keys
+
+  @doc """
+  Returns whether this key exists in the Entity struct.
+
+    iex> Entity.has_key? :id
+    true
+
+    iex> Entity.has_key? :buffs
+    true
+
+    iex> Entity.has_key? :damage_taken
+    false
+  """
+  def has_key?(key) do
+    Enum.any? @keys, fn
+      {k, _} -> k == key
+      k      -> k == key
+    end
+  end
 
   @doc """
   Returns the id of the provided entity.
