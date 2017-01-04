@@ -74,4 +74,20 @@ defmodule State do
     State.get_player(state, player_id)
     |> Map.get(:hero)
   end
+
+  @doc """
+  Returns the minions for a player.
+
+    iex> State.get_minions State.create_empty, "p1"
+    []
+
+    iex> %{State.create_empty | board: [Minion.create(%{name: "Imp"}, owner: "p1"), Minion.create(%{name: "War Golem"}, owner: "p2")]}
+    ...> |> State.get_minions("p1")
+    [Minion.create(%{name: "Imp"}, owner: "p1")]
+  """
+  def get_minions(state, player_id) do
+    state
+    |> Map.get(:board)
+    |> Enum.filter(&(Entity.owner(&1) == player_id))
+  end
 end
