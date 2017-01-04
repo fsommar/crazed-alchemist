@@ -63,4 +63,15 @@ defmodule State do
     |> Enum.filter(fn(x) -> x.id == id end)
     |> List.first
   end
+
+  @doc """
+  Returns the hero for the player with the given id.
+
+    iex> State.get_hero State.create_empty, "p1"
+    Map.get(Player.create("p1"), :hero)
+  """
+  def get_hero(state, player_id) do
+    State.get_player(state, player_id)
+    |> Map.get(:hero)
+  end
 end
