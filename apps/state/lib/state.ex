@@ -30,11 +30,11 @@ defmodule State do
       ]
     }
   """
-  def create_empty(h1 \\ nil, h2 \\ nil) do
+  def create_empty(p1 \\ nil, p2 \\ nil) do
     %State{
       players: [
-        Player.create("p1", hero: h1),
-        Player.create("p2", hero: h2)
+        p1 || Player.create("p1"),
+        p2 || Player.create("p2")
       ]
     }
   end
