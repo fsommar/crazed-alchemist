@@ -1,15 +1,16 @@
 defmodule Data.Minion do
 
   @enforce_keys [:attack, :health, :mana_cost]
-  defstruct [:attack, :health, :mana_cost, :race, :rarity,
+  defstruct [:name, :attack, :health, :mana_cost, :race, :rarity,
              :battlecry, :combo, :target, :condition, :trigger,
-             :description, type: :minion]
+             :description, :type]
 
   @doc """
   Returns the definition for a minion by name.
 
     iex> Data.Minion.get "Imp"
     %Data.Minion{
+      name:      "Imp",
       attack:    1,
       health:    1,
       mana_cost: 1,
@@ -21,7 +22,11 @@ defmodule Data.Minion do
     nil
   """
   def get(name) do
-    definitions[name]
+    if Data.Minion.exists? name do
+      %{definitions[name] | name: name, type: :minion}
+    else
+      nil
+    end
   end
 
   @doc """
