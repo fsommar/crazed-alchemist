@@ -90,4 +90,14 @@ defmodule State do
     |> Map.get(:board)
     |> Enum.filter(&(Entity.owner(&1) == player_id))
   end
+
+  @doc """
+  Adds a minion to the board.
+
+    iex> State.add_minion State.create_empty, Minion.create(%{name: "Imp"})
+    %{State.create_empty | board: [Minion.create(%{name: "Imp"})]
+  """
+  def add_minion(state, minion, position \\ nil) do
+    state
+  end
 end
