@@ -1,5 +1,6 @@
 defmodule State do
   alias Entity.Player
+  alias Entity.Minion
 
   defstruct id:             "game1",
             player_in_turn: "p1",
@@ -88,16 +89,110 @@ defmodule State do
   def get_minions(state, player_id) do
     state
     |> Map.get(:board)
-    |> Enum.filter(&(Entity.owner(&1) == player_id))
+    |> Enum.filter(&(Entity.get(&1, :owner) == player_id))
   end
 
   @doc """
-  Adds a minion to the board.
+  Returns the hand for a player.
 
-    iex> State.add_minion State.create_empty, Minion.create(%{name: "Imp"})
-    %{State.create_empty | board: [Minion.create(%{name: "Imp"})]
+    iex> State.get_hand State.create_empty, "p1"
+    MapSet.new()
+
+    iex> State.create_empty
+    ...> |> State.add_to_hand("p1", "x")
+    ...> |> State.get_hand("p1")
+    MapSet.new(["x"])
   """
-  def add_minion(state, minion, position \\ nil) do
+  def get_hand(state, player_id) do
     state
+    |> State.get_player(player_id)
+    |> Map.get(:hand)
+    |> MapSet.new()
   end
+
+  @doc """
+  Returns the deck for a player in an ordered list.
+
+    iex> State.get_deck State.create_empty, "p1"
+    []
+
+    iex> State.create_empty
+    ...> |> State.add_to_deck("p1", "x")
+    ...> |> State.add_to_deck("p1", "y")
+    ...> |> State.get_deck("p1")
+    ["x", "y"]
+  """
+  def get_deck(state, player_id) do
+    state
+    |> State.get_player(player_id)
+    |> Map.get(:deck)
+  end
+
+  @doc """
+  Adds a player's minion to the board.
+
+    iex> State.add_minion State.create_empty, "p1", Minion.create(%{name: "Imp"})
+    %{State.create_empty | board: [Minion.create(%{name: "Imp"}, owner: "p1")]}
+  """
+  def add_minion(state, player_id, %Minion{} = minion, position \\ nil) do
+    board_minion = Entity.apply_opts(minion, position: position, owner: player_id)
+    state
+    |> Map.update(:board, [], fn(board) -> [board_minion | board] end)
+  end
+
+  @doc """
+  Adds a card to a player's hand.
+
+    iex> State.create_empty
+    ...> |> State.add_to_hand("p1", "Card1")
+    ...> |> State.add_to_hand("p1", "Card2")
+    ...> |> State.get_hand("p1")
+    MapSet.new(["Card2", "Card1"])
+  """
+  def add_to_hand(state, player_id, card) do
+    state
+    |> State.update_player(player_id, fn(m) ->
+      Map.update!(m, :hand, &(List.insert_at(&1, -1, card)))
+    end)
+  end
+
+  @doc """
+  Adds a card to the bottom of a player's deck.
+
+    iex> State.create_empty
+    ...> |> State.add_to_deck("p1", "Card1")
+    ...> |> State.add_to_deck("p1", "Card2")
+    ...> |> State.get_deck("p1")
+    ["Card1", "Card2"]
+  """
+  def add_to_deck(state, player_id, card) do
+    state
+    |> State.update_player(player_id, fn(m) ->
+      Map.update!(m, :deck, &(List.insert_at(&1, -1, card)))
+    end)
+  end
+
+  @doc """
+  Updates the player with the given id.
+
+    iex> State.create_empty
+    ...> |> State.update_player("p1", fn(p) -> %{p | deck: ["x"]} end)
+    ...> |> State.get_player("p1")
+    %{Player.create("p1") | deck: ["x"]}
+  """
+  def update_player(%State{} = state, player_id, func) do
+    player_with_id = fn(id) ->
+      fn :get_and_update, list, next_op ->
+        index = Enum.find_index(list, fn(x) -> Map.get(x, :id) == id end)
+        item = Enum.at(list, index)
+
+        {_, updated_item} = next_op.(item)
+        {item, List.replace_at(list, index, updated_item)}
+      end
+    end
+
+    state
+    |> update_in([Access.key(:players), player_with_id.(player_id)], func)
+  end
+
 end

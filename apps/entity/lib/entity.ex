@@ -21,49 +21,17 @@ defmodule Entity do
     end
   end
 
-  @doc """
-  Returns the id of the provided entity.
-
-    iex> Entity.id(%{:entity => %Entity{id: "e1"}})
-    "e1"
-
-    iex> Entity.id(%{:entity => %Entity{name: "ent"}})
-    nil
-  """
-  def id(entity) do
-    entity
-    |> Map.get(:entity)
-    |> Map.get(:id)
+  def get(map) do
+    Map.get(map, :entity)
   end
 
-  @doc """
-  Returns the name of the provided entity.
-
-    iex> Entity.name(%{:entity => %Entity{name: "Hello World"}})
-    "Hello World"
-
-    iex> Entity.name(%{:entity => %Entity{id: "e1"}})
-    nil
-  """
-  def name(entity) do
-    entity
-    |> Map.get(:entity)
-    |> Map.get(:name)
+  def get(map, key) do
+    get(map)
+    |> Map.get(key)
   end
 
-  @doc """
-  Returns the owner id of the provided entity.
-
-    iex> Entity.owner(%{:entity => %Entity{owner: "p1"}})
-    "p1"
-
-    iex> Entity.owner(%{:entity => %Entity{id: "e1"}})
-    nil
-  """
-  def owner(entity) do
-    entity
-    |> Map.get(:entity)
-    |> Map.get(:owner)
+  def update!(map, key, val) do
+    Map.update!(map, :entity, &Map.put(&1, key, val))
   end
 
   @doc """
@@ -87,7 +55,7 @@ defmodule Entity do
     |> Enum.reduce(entity, fn {key, val}, acc ->
       cond do
         Map.has_key? entity, key -> Map.put(acc, key, val)
-        Entity.has_key? key      -> Map.update!(acc, :entity, &Map.put(&1, key, val))
+        Entity.has_key? key      -> Entity.update!(acc, key, val)
         true                     -> acc
       end
     end)

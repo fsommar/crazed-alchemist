@@ -12,12 +12,12 @@ defmodule Core do
 
     iex> Core.create_game
     ...> |> State.get_hero(:player1)
-    ...> |> Entity.name
+    ...> |> Entity.get(:name)
     "Jaina Proudmoore"
 
     iex> Core.create_game([hero: Core.create_hero "Gul'dan"])
     ...> |> State.get_hero(:player1)
-    ...> |> Entity.name
+    ...> |> Entity.get(:name)
     "Gul'dan"
 
   If there's a need to only populate the second player, the first player can be provided an empty list `[]`.
@@ -41,16 +41,15 @@ defmodule Core do
   end
 
   def place_minion(state, player_id, minion, position \\ nil) do
-    minion = %{minion | owner: player_id, position: position}
-    State.add_minion state, minion
+    State.add_minion state, player_id, minion, position
   end
 
   def add_to_hand(state, player_id, card) do
-    state
+    State.add_to_hand state, player_id, card
   end
 
   def add_to_deck(state, player_id, card) do
-    state
+    State.add_to_deck state, player_id, card
   end
 
   def create_player(player_id, opts \\ []) do

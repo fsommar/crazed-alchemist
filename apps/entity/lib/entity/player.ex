@@ -18,9 +18,9 @@ defmodule Entity.Player do
     }
   """
   def create(id, opts \\ []) do
-    player = %Player{
+    %Player{
       id: id
     }
-    Entity.apply_opts(player, opts)
+    |> Entity.apply_opts(opts)
   end
 end
