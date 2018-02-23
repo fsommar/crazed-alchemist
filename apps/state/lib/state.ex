@@ -131,10 +131,10 @@ defmodule State do
   @doc """
   Adds a player's minion to the board.
 
-    iex> State.add_minion State.create_empty, "p1", Minion.create(%{name: "Imp"})
+    iex> State.place_minion State.create_empty, "p1", Minion.create(%{name: "Imp"})
     %{State.create_empty | board: [Minion.create(%{name: "Imp"}, owner: "p1")]}
   """
-  def add_minion(state, player_id, %Minion{} = minion, position \\ nil) do
+  def place_minion(state, player_id, %Minion{} = minion, position \\ nil) do
     board_minion = Entity.apply_opts(minion, position: position, owner: player_id)
     state
     |> Map.update(:board, [], fn(board) -> [board_minion | board] end)

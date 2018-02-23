@@ -33,23 +33,11 @@ defmodule Core do
 
     # This takes care of adding minions, and cards to a player's deck and hand.
     Enum.reduce([player1: player1, player2: player2], state, fn {player_id, p}, state ->
-      [minions: &Core.place_minion/3, hand: &Core.add_to_hand/3, deck: &Core.add_to_deck/3]
-      |> Enum.reduce(state, fn {key, f}, state ->
-        Enum.reduce(Keyword.get(p, key, []), state, &f.(&2, player_id, &1))
+      [minions: &State.place_minion/3, hand: &State.add_to_hand/3, deck: &State.add_to_deck/3]
+      |> Enum.reduce(state, fn {key, func}, state ->
+        Enum.reduce(Keyword.get(p, key, []), state, &func.(&2, player_id, &1))
       end)
     end)
-  end
-
-  def place_minion(state, player_id, minion, position \\ nil) do
-    State.add_minion state, player_id, minion, position
-  end
-
-  def add_to_hand(state, player_id, card) do
-    State.add_to_hand state, player_id, card
-  end
-
-  def add_to_deck(state, player_id, card) do
-    State.add_to_deck state, player_id, card
   end
 
   def create_player(player_id, opts \\ []) do
