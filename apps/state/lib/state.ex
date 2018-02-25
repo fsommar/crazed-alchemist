@@ -172,10 +172,7 @@ defmodule State do
       Hero.create(%{name: "Thrall"}, id: :thrall)
   """
   def replace_hero(%__MODULE__{} = state, player_id, %Hero{} = hero) do
-    hero_id = case Entity.get(hero, :id) do
-      nil -> get_hero(state, player_id) |> Entity.get(:id)
-      id  -> id
-    end
+    hero_id = Entity.get(hero, :id) || Entity.get(get_hero(state, player_id), :id)
     update_player(state, player_id, fn player ->
       Map.put(player, :hero, Entity.apply_opts(hero, id: hero_id))
     end)
