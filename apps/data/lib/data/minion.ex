@@ -23,9 +23,7 @@ defmodule Data.Minion do
   """
   def get(name) do
     if Data.Minion.exists? name do
-      %{definitions[name] | name: name, type: :minion}
-    else
-      nil
+      %{definitions()[name] | name: name, type: :minion}
     end
   end
 
@@ -39,10 +37,10 @@ defmodule Data.Minion do
     false
   """
   def exists?(name) do
-    Map.has_key? definitions, name
+    Map.has_key? definitions(), name
   end
 
-  defp definitions do
+  defp definitions() do
     %{
       "Imp" => %Data.Minion{
         attack:    1,

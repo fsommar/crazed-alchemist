@@ -4,18 +4,18 @@ defmodule Entity.Attacker do
   @doc """
   Updates the composed `:attacker` key of an Entity.
 
-    iex> Attacker.update!(%{:attacker => %{:health => 5}}, :health, &(&1 + 5))
-    %{:attacker => %{:health => 10}}
+      iex> Attacker.update!(%{:attacker => %{:health => 5}}, :health, &(&1 + 5))
+      %{:attacker => %{:health => 10}}
   """
   def update!(entity, key, func) do
-    Map.update!(entity, :attacker, fn(e) -> Map.update!(e, key, func) end)
+    Map.update!(entity, :attacker, &Map.update!(&1, key, func))
   end
 
   @doc """
   Damages the attacker entity by the given amount.
 
-    iex> Attacker.damage(%{:attacker => %Attacker{}}, 3)
-    %{:attacker => %Attacker{damage_taken: 3}}
+      iex> Attacker.damage(%{:attacker => %Attacker{}}, 3)
+      %{:attacker => %Attacker{damage_taken: 3}}
   """
   def damage(entity, amount) do
     Entity.Attacker.update!(entity, :damage_taken, &(amount + &1))

@@ -18,9 +18,7 @@ defmodule Data.Hero do
   """
   def get(name) do
     if Data.Hero.exists? name do
-      %{definitions[name] | name: name, health: 30, mana: 10}
-    else
-      nil
+      %{definitions()[name] | name: name, health: 30, mana: 10}
     end
   end
 
@@ -28,10 +26,10 @@ defmodule Data.Hero do
   Returns whether a Hero by the provided name exists.
   """
   def exists?(name) do
-    Map.has_key? definitions, name
+    Map.has_key? definitions(), name
   end
 
-  defp definitions do
+  defp definitions() do
     %{
       "Jaina Proudmoore" => %Data.Hero{
         hero_power: "Fireblast"
