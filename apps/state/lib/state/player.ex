@@ -20,4 +20,8 @@ defmodule State.Player do
     }
     |> Entity.apply_opts(opts)
   end
+
+  def update_hero(%__MODULE__{} = player, func) do
+    Map.update!(player, :hero, func)
+  end
 end

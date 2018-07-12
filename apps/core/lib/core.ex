@@ -29,7 +29,8 @@ defmodule Core do
   """
   def create_game(player1 \\ [], player2 \\ []) do
     # The optionals are passed to player creation, as they can e.g. read and act on the `:hero` key.
-    state = State.create Core.create_player(:player1, player1), Core.create_player(:player2, player2)
+    state =
+      State.create(Core.create_player(:player1, player1), Core.create_player(:player2, player2))
 
     # This takes care of adding minions, and cards to a player's deck and hand.
     Enum.reduce([player1: player1, player2: player2], state, fn {player_id, p}, state ->
@@ -38,6 +39,12 @@ defmodule Core do
         Enum.reduce(Keyword.get(p, key, []), state, &func.(&2, player_id, &1))
       end)
     end)
+  end
+
+  def start_game(%State{} = state) do
+    state
+    |> (&Enum.reduce(1..4, &1, fn _, state -> draw_card(state, :player1) end)).()
+    |> (&Enum.reduce(1..3, &1, fn _, state -> draw_card(state, :player2) end)).()
   end
 
   def create_player(player_id, opts \\ []) do
@@ -53,17 +60,45 @@ defmodule Core do
   end
 
   def draw_card(%State{} = state, player_id) do
-    {card, new_state} = State.pop_deck(state, player_id)
-    State.add_to_hand(new_state, player_id, card)
+    case State.pop_deck(state, player_id) do
+      {nil, state} ->
+        State.update_hero(state, player_id, fn hero ->
+          hero
+          |> Entity.Attacker.damage(Entity.get(hero, :fatigue))
+          |> Entity.update!(:fatigue, &(&1 + 1))
+        end)
+
+      {card, state} ->
+        State.add_to_hand(state, player_id, card)
+    end
   end
 
   def play_card(%State{} = state, player_id, card_id) do
     %Entity.Card{} = card = State.get_entity(state, player_id, card_id)
-    minion = create_minion(Entity.get(card, :name), id: card_id)
+    minion = Entity.get(card, :name) |> create_minion(id: card_id)
 
     state
     |> State.remove_from_hand(player_id, card_id)
     |> State.place_minion(player_id, minion)
   end
 
+  def end_turn(%State{player_in_turn: other_player_id} = state, player_id) do
+    %State{state | player_in_turn: player_id}
+    |> draw_card(other_player_id)
+    |> draw_card(player_id)
+  end
+
+  def attack(%State{} = state, _player_id, minion_id, target_id) do
+    attack_with = fn id ->
+      &Entity.Attacker.damage(&1, Entity.get_attack(State.get_entity(state, id)))
+    end
+
+    state
+    |> State.update_minion(target_id, attack_with.(minion_id))
+    |> State.update_minion(minion_id, attack_with.(target_id))
+  end
+
+  def damage_hero(%State{} = state, player_id, amount) do
+    State.update_hero(state, player_id, &Entity.Attacker.damage(&1, amount))
+  end
 end

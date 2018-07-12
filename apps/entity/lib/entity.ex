@@ -26,12 +26,32 @@ defmodule Entity do
   end
 
   def get(map, key) do
-    get(map)
-    |> Map.get(key)
+    cond do
+      Map.has_key? map, key -> Map.get(map, key)
+      Entity.has_key? key   -> get(map) |> Map.get(key)
+      true                  -> nil
+    end
   end
 
-  def update!(map, key, val) do
-    Map.update!(map, :entity, &Map.put(&1, key, val))
+  def get_attack(map) do
+    Entity.get(map, :name)
+    |> Data.get_definition()
+    |> Map.get(:attack)
+  end
+
+  def update!(entity, key, func) do
+    case update(entity, key, func) do
+      nil -> raise "key #{inspect key} not found in entity #{entity.__struct__ |> Module.split() |> Enum.at(-1)}"
+      map -> map
+    end
+  end
+
+  def update(entity, key, func) do
+    cond do
+      Map.has_key? entity, key -> Map.update!(entity, key, func)
+      Entity.has_key? key      -> Map.update!(entity, :entity, &Map.update!(&1, key, func))
+      true                     -> nil
+    end
   end
 
   @doc """
@@ -51,13 +71,8 @@ defmodule Entity do
       %Entity{}
   """
   def apply_opts(entity, opts) do
-    opts
-    |> Enum.reduce(entity, fn {key, val}, acc ->
-      cond do
-        Map.has_key? entity, key -> Map.put(acc, key, val)
-        Entity.has_key? key      -> Entity.update!(acc, key, val)
-        true                     -> acc
-      end
+    Enum.reduce(opts, entity, fn {key, val}, acc ->
+      update(acc, key, fn _ -> val end) || acc
     end)
   end
 
@@ -67,7 +82,7 @@ defmodule Entity do
       @doc """
       Creates an entity, optionally with a list of keyword arguments, given a map with a `:name` key.
       """
-      def create(%{name: name} = _hero, opts \\ []) do
+      def create(%{name: name} = _entity, opts \\ []) do
         Entity.apply_opts %__MODULE__{}, opts ++ [name: name]
       end
 

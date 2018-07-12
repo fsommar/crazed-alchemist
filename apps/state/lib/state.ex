@@ -157,6 +157,26 @@ defmodule State do
   end
 
   @doc """
+  Returns the entity that first matches the provided id, in order hero, board, hand, deck
+   -- first for player 1 and only then if no result was found, for player 2.
+
+      iex> state = State.add_to_deck(State.create, :player2, Minion.create(%{name: "Deck P2"}, id: :x))
+      iex> State.get_entity(state, :x)
+      ...> |> Entity.get(:name)
+      "Deck P2"
+      iex> state = State.add_to_deck(state, :player1, Minion.create(%{name: "Deck P1"}, id: :x))
+      iex> State.get_entity(state, :x)
+      ...> |> Entity.get(:name)
+      "Deck P1"
+  """
+  def get_entity(%__MODULE__{} = state, entity_id) do
+    get_players(state)
+    |> Enum.map(&get_entity(state, Entity.get(&1, :id), entity_id))
+    |> Enum.filter(&is_map/1)
+    |> List.first()
+  end
+
+  @doc """
   Replaces a player's hero.
 
   The current hero's id will be used in case the new hero doesn't have one.
@@ -292,6 +312,17 @@ defmodule State do
       end
 
     update_in(state, [Access.key(:players), with_player_id], func)
+  end
+
+  def update_hero(%__MODULE__{} = state, player_id, func) do
+    update_player(state, player_id, &Player.update_hero(&1, func))
+  end
+
+  def update_minion(%__MODULE__{} = state, minion_id, func) do
+    state
+    |> Map.update!(:board, &Enum.map(&1, fn m ->
+      if Entity.get(m, :id) == minion_id, do: func.(m), else: m
+    end))
   end
 
 end

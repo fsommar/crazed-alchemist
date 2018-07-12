@@ -22,7 +22,7 @@ defmodule Data.Minion do
     nil
   """
   def get(name) do
-    if Data.Minion.exists? name do
+    if exists? name do
       %{definitions()[name] | name: name, type: :minion}
     end
   end

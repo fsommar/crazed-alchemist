@@ -18,7 +18,7 @@ defmodule Entity.Attacker do
       %{:attacker => %Attacker{damage_taken: 3}}
   """
   def damage(entity, amount) do
-    Entity.Attacker.update!(entity, :damage_taken, &(amount + &1))
+    update!(entity, :damage_taken, &(amount + &1))
   end
 
   defmacro __using__(_) do
